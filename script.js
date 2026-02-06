@@ -331,26 +331,76 @@ function debounce(func, wait) {
 
             const grid = document.getElementById('latticeGrid');
             grid.innerHTML = '';
-            grid.style.gridTemplateColumns = `repeat(${x}, 40px)`;
-            grid.style.gridTemplateRows = `repeat(${y}, 40px)`;
 
-            for (let row = 0; row < y; row++) {
-                for (let col = 0; col < x; col++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'lattice-cell';
-                    cell.dataset.row = y - 1 - row;
-                    cell.dataset.col = col;
+            // Remove grid layout and switch to absolute
+            grid.style.display = 'block';
+            grid.style.position = 'relative';
 
+            const cellSize = getCellSize(x, y);
+            const width = x * cellSize;
+            const height = y * cellSize;
+
+            grid.style.width = (width + 20) + 'px'; // Add padding for points
+            grid.style.height = (height + 20) + 'px';
+            grid.style.margin = '0 auto';
+
+            // Draw Grid Lines (Horizontal)
+            for (let j = 0; j <= y; j++) {
+                const line = document.createElement('div');
+                line.style.position = 'absolute';
+                line.style.left = '10px';
+                line.style.top = (10 + (y - j) * cellSize) + 'px';
+                line.style.width = width + 'px';
+                line.style.height = '1px';
+                line.style.backgroundColor = 'var(--pastel-blue-light)';
+                grid.appendChild(line);
+            }
+
+            // Draw Grid Lines (Vertical)
+            for (let i = 0; i <= x; i++) {
+                const line = document.createElement('div');
+                line.style.position = 'absolute';
+                line.style.left = (10 + i * cellSize) + 'px';
+                line.style.top = '10px';
+                line.style.width = '1px';
+                line.style.height = height + 'px';
+                line.style.backgroundColor = 'var(--pastel-blue-light)';
+                grid.appendChild(line);
+            }
+
+            // Draw Points
+            for (let j = 0; j <= y; j++) {
+                for (let i = 0; i <= x; i++) {
                     const point = document.createElement('div');
                     point.className = 'lattice-point';
-                    cell.appendChild(point);
+                    // Point is 12px, so offset by -6px to center
+                    // We added 10px padding
+                    point.style.left = (10 + i * cellSize - 6) + 'px';
+                    point.style.top = (10 + (y - j) * cellSize - 6) + 'px';
 
-                    if (col === 0 && row === y - 1) cell.classList.add('origin');
-                    if (col === x - 1 && row === 0) cell.classList.add('destination');
+                    if (i === 0 && j === 0) {
+                         // Origin (0,0) logical is bottom-left
+                         // Visual: i=0, j=0 => left=10-6, top=10 + y*cellSize - 6
+                         // Wait, loop j is logical Y?
+                         // If j=0 is logical Y=0.
+                         // My loop: for (let j = 0; j <= y; j++)
+                         // Visual Y = (y - j) * cellSize.
+                         // So j=0 => Visual Y = y*cellSize (Bottom). Correct.
 
-                    grid.appendChild(cell);
+                         point.style.backgroundColor = '#fff';
+                         point.style.border = '2px solid var(--gradient-start)';
+                    }
+                     if (i === x && j === y) {
+                         // Destination (x,y) logical
+                         // Visual: i=x, j=y => left=10+x*cellSize-6, top=10 + (y-y)*cellSize - 6 = 10-6. (Top). Correct.
+                         point.style.backgroundColor = '#fff';
+                         point.style.border = '2px solid var(--pastel-pink-light)';
+                    }
+
+                    grid.appendChild(point);
                 }
             }
+
             generateRandomPath(x, y);
         }
 
@@ -384,24 +434,42 @@ function debounce(func, wait) {
 
             const grid = document.getElementById('latticeGrid');
             const cellSize = getCellSize(x, y);
-            let posX = 0, posY = y - 1;
+
+            let currentX = 0; // Logical X
+            let currentY = 0; // Logical Y
 
             currentPath.forEach((step, index) => {
                 setTimeout(() => {
                     const line = document.createElement('div');
                     line.className = 'lattice-path-line';
+
+                    // Start position (visual)
+                    // Logical (currentX, currentY) -> Visual Left: 10 + currentX*sz, Visual Top: 10 + (y - currentY)*sz
+
+                    const startLeft = 10 + currentX * cellSize;
+                    const startTop = 10 + (y - currentY) * cellSize;
+
                     if (step === 'R') {
+                        // Move Right: to (currentX + 1, currentY)
+                        // Line is horizontal. Width cellSize.
                         line.style.width = cellSize + 'px';
                         line.style.height = '4px';
-                        line.style.left = (posX * cellSize) + 'px';
-                        line.style.top = (posY * cellSize - 2) + 'px';
-                        posX++;
+                        // Center vertically on the grid line
+                        line.style.left = startLeft + 'px';
+                        line.style.top = (startTop - 2) + 'px'; // -2 to center 4px line
+                        currentX++;
                     } else {
+                        // Move Up: to (currentX, currentY + 1)
+                        // Line is vertical. Height cellSize.
+                        // Visual: Goes UP from startTop.
+                        // End Top is 10 + (y - (currentY + 1)) * sz = startTop - sz
+
                         line.style.width = '4px';
                         line.style.height = cellSize + 'px';
-                        line.style.left = (posX * cellSize - 2) + 'px';
-                        line.style.top = ((posY - 1) * cellSize) + 'px';
-                        posY--;
+                        // Center horizontally
+                        line.style.left = (startLeft - 2) + 'px';
+                        line.style.top = (startTop - cellSize) + 'px';
+                        currentY++;
                     }
                     line.style.animationDelay = '0s';
                     grid.appendChild(line);
