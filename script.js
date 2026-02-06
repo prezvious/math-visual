@@ -223,7 +223,8 @@ function debounce(func, wait) {
         const tooltip = document.getElementById('pascalTooltip');
 
         function updatePascal() {
-            const rows = parseInt(document.getElementById('pascalRows').value);
+            let rows = parseInt(document.getElementById('pascalRows').value);
+            if (rows > 20) rows = 20;
             document.getElementById('pascalRowsVal').textContent = rows;
 
             const container = document.getElementById('pascalTriangle');
