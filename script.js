@@ -480,7 +480,7 @@ function debounce(func, wait) {
 
         // ===================== HANDSHAKE PROBLEM =====================
         function updateHandshake() {
-            const n = parseInt(document.getElementById('peopleCount').value);
+            let n = parseInt(document.getElementById('peopleCount').value); if (n > 20) n = 20; document.getElementById('peopleCount').value = n;
             document.getElementById('peopleCountVal').textContent = n;
 
             const handshakes = combination(n, 2);
