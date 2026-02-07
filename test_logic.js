@@ -62,9 +62,9 @@ const latticeMax = combination(40, 20);
 console.log('Lattice(20,20) =', latticeMax);
 assert.ok(Number.isSafeInteger(latticeMax), 'Lattice(20,20) should fit in safe integer');
 
-// 3. Handshake 50
+// 3. Handshake 20
 // C(50, 2) = 1225. Trivial.
-assert.strictEqual(combination(50, 2), 1225, 'Handshake(50) should be 1225');
+assert.strictEqual(combination(20, 2), 190, 'Handshake(20) should be 190');
 
 // 4. Large Permutation
 // "MISSISSIPPI" length 11.
